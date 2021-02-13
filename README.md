@@ -105,6 +105,18 @@ object HelloWorld extends JFXApp {
 
 > Pure Java Implement Psy4J (before version 1.2) can be fond in [Here](https://github.com/corkine/psy4jOld)
 
+## Real World Experimental Example
+
+Experimental example developed using Psy4J: 
+
+- [lhlExp](https://gitee.com/corkine/lhlExp) :: Basic psychology, experiments on memory and cognitive ability 
+- [xkExp](https://gitee.com/corkine/xk-experiment) :: Developmental and Educational Psychology, using Psy4J technology for electronic questionnaire tests and online "quiz"
+- [fxwExp](https://gitee.com/corkine/fxw-experiment) :: Personality psychology, using Psy4J for online "quiz" and real-time collection of "video clips" of participants solving problems. 
+- [rhythmExp](https://gitee.com/corkine/rhythmExp) :: Congnitive psychology, Perception experiment of "rhythm and synchronization" based on the early version of Psy4J 
+- [wshExp & zswExp](https://gitee.com/corkine/psy4j-early) :: The most original version of Psy4J was developed based on the need to write these two experiments. These two experiments in the field of cognitive psychology used sound detection technology and mouse tracking technology with Psy4J for experiments. 
+- [timeSegExp2019](https://gitee.com/corkine/timeSegExp) :: Cognitive psychology, experiments in the field of time perception, combining MATLAB and Psy4J 
+- [timeSegExp2020](https://gitee.com/corkine/masterThesisExp) :: Congnitive psychology, A variety of experimental techniques (language, framework, etc.) are combined to demonstrate Psy4J's tailoring capabilities. 
+
 ## Why Psy4J?
 
 **Psy4J is feature-rich**: In addition to the core functions, Psy4J provides functions such as "view angle and pixel conversion", "automatic sound collection", "simple pure tone production" and simple statistical analysis functions. Nevertheless, we still recommend using Python or MATLAB for more detailed and professional data analysis. For example, in my experience, I often use Psy4J as a tool for experiment arrangement, stimulus generation, and user data collection, and save the collected data as JSON files, and perform data analysis and statistical analysis in Python and MATLAB.
