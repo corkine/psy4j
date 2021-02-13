@@ -1,0 +1,17 @@
+.bsp
+.idea
+.vscode
+pics
+data
+target
+display/results
+display/seeds
+project/target
+project/project/target
+logDist
+genPictures
+output
+out
+*.class
+*.history
+psy4j.log
