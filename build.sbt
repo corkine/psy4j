@@ -1,7 +1,8 @@
 import scala.sys.process._
 
 name := "psy4j"
-description := "PSY4J Dev Repo"
+description := "Psy4J means Psychology Experiment ToolKit For Java Virtual Machine Platform，" +
+  "The program is written in Java and Scala and built on the JavaFx GUI platform."
 version := "1.3.0"
 fork in run := true
 javacOptions := Seq("-target", "11")
@@ -35,10 +36,10 @@ libraryDependencies ++= {
 
 // groupId, SCM, license information
 organization := "com.mazhangjing"
-homepage := Some(url("https://github.com/corkine/psy4j"))
+homepage := Some(url("https://psy4j.mazhangjing.com"))
 scmInfo := Some(ScmInfo(url("https://github.com/corkine/psy4j"), "git@github.com:corkine/psy4j.git"))
-developers := List(Developer("Corkine Ma", "corkine", "corkine@outlook.com", url("https://mazhangjing.com")))
-licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+developers := List(Developer("corkine", "Corkine Ma", "corkine@outlook.com", url("https://mazhangjing.com")))
+licenses += ("GNU General Public License, version 2", url("https://www.gnu.org/licenses/old-licenses/gpl-2.0.html"))
 publishMavenStyle := true
 
 // disable publishw ith scala version, otherwise artifact name will include scala version
