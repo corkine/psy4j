@@ -18,23 +18,10 @@ import org.slf4j.LoggerFactory;
  * 因为这个类使用“交给子类”设计模式、“观察者”设计模式，因此能够最大限度的让程序保持弹性。</p>
  *
  * @author <a href='http://www.mazhangjing.com'>Corkine Ma</a>
- * @author Marvin Studio @ Central China com.mazhangjing.lhl.Normal University
- * @version 1.1
+ * @author Marvin Studio @ Central China Normal University
+ * @version 1.2
  * */
-public abstract class Screen {
-
-    /*一个失败的尝试：使用 Builder 模式简化 Screen 开发
-    问题在于：Screen 是抽象类，而 Java 不能将函数作为值进行传递，因此不能通过先构造一个 Screen，然后再注入函数/属性的 Builder 模式。
-    以及，也不能先保存一个函数，然后再注入一个匿名 Screen 中。
-    private static class Builder implements com.mazhangjing.lab.Builder<Screen> {
-        private Integer duration;
-        private String information;
-        public Screen named(String name) {
-        }
-        @Override public Screen build() {
-            return null;
-        }
-    }*/
+public abstract class BasicScreen {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -42,12 +29,13 @@ public abstract class Screen {
 
     private Scene scene;
 
+    public Integer screenID = hashCode();
+
     public Experiment getExperiment() {
         return experiment;
     }
 
     public void setExperiment(Experiment experiment) {
-        //System.out.println("Setting screen now...");
         this.experiment = experiment;
     }
 
@@ -75,7 +63,7 @@ public abstract class Screen {
     public String information = "Screen";
 
     /**你应该在子类自行实现 Screen 的 initScreen 方法，为 layout 和 duration 变量赋值，设置子类状态*/
-    public abstract Screen initScreen();
+    public abstract BasicScreen initScreen();
 
     public String getData() { return data; }
 
@@ -100,23 +88,4 @@ public abstract class Screen {
     public String toString() {
         return information;
     }
-
-    /*public static void main(String[] args){
-        class TestScreen extends Screen {
-            @Override
-            public Screen initScreen() {
-                this.layout = new FlowPane();
-                this.duration = 500;
-                return this;
-            }
-            @Override
-            public void eventHandler(Event event, Experiment experiment, Scene scene) {
-                System.out.print(event.getTarget().toString());
-            }
-        }
-        SimpleIntegerProperty terminal = new SimpleIntegerProperty(0);
-        Screen screen = new TestScreen();
-        System.out.print(screen.getDuration().toString());
-        System.out.print(screen.getLayout().toString());
-    }*/
 }

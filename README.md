@@ -35,8 +35,9 @@ The following is a simple "HELLO, WORLD" program. You can embed the Psy4J code i
 - One or more complete experiments that inherit the `Experiment` class and contain multiple sets of `Trial` class instances. You only need to override `initExperiment` method to set them. In addition, the `Experiment` class allows you to save data before closing the experiment, such as serializing to JSON/ In the CSV file, you only need to rewrite the `saveData` method.
 
 Note: The following program uses Scala’s JavaFx DSL: [scalafx](http://www.scalafx.org/)
+
 ```scala
-import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor, Trial}
+import com.mazhangjing.lab.{Experiment, BasicScreen, ScreenAdaptor, Trial}
 import com.mazhangjing.utils.ExpStarter
 import javafx.event.Event
 import javafx.scene.input.KeyCode
@@ -53,11 +54,14 @@ class DemoExperiment extends Experiment {
   override def initExperiment(): Unit = {
     trials.add(new Trial {
       override def initTrial(): Trial = {
-        screens.add(new ScreenAdaptor{
+        screens.add(new ScreenAdaptor {
           private val info = StringProperty("HELLO WORLD")
+
           override def callWhenShowScreen(): Unit = println("Before Show")
+
           override def callWhenLeavingScreen(): Unit = println("After Show")
-          override def initScreen(): Screen = {
+
+          override def initScreen(): BasicScreen = {
             layout = new StackPane {
               children = Seq(new Label {
                 text <==> info
@@ -67,6 +71,7 @@ class DemoExperiment extends Experiment {
             duration = 50000
             this
           }
+
           override def eventHandler(event: Event, experiment: Experiment, scene: JScene): Unit = {
             ifKeyIn(event) { c => {
               info.set(s"You Pressed ${c.getName}")
@@ -79,18 +84,20 @@ class DemoExperiment extends Experiment {
       }
     }.initTrial())
   }
+
   override def saveData(): Unit = {
     println("Saving Data Here...")
   }
 }
 
 object HelloWorld extends JFXApp {
-  stage = new PrimaryStage { s =>
-    scene = new Scene(400,300) {
+  stage = new PrimaryStage {
+    s =>
+    scene = new Scene(400, 300) {
       root = new StackPane {
         children = Seq(new Button("Run") {
           onAction = _ => {
-            new ExpStarter {}.runExperiment("DemoExperiment",fullScreen = false,s)
+            new ExpStarter {}.runExperiment("DemoExperiment", fullScreen = false, s)
           }
         })
       }

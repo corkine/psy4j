@@ -1,6 +1,6 @@
 package com.mazhangjing.demo.lhl
 
-import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor, Trial}
+import com.mazhangjing.lab.{Experiment, BasicScreen, ScreenAdaptor, Trial}
 import Exp2Config.{TARGET_SIZE, TARGET_TIME, _}
 import ExpConfig._SKIP_NOW
 import com.mazhangjing.utils.Logging
@@ -183,7 +183,7 @@ trait FeedbackScreen extends ScreenAdaptor {
   private val info = StringProperty("")
   val introSize: Int
   val timeSkip: Int
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text {
@@ -222,7 +222,7 @@ trait TargetShowAndCheckScreen extends ScreenAdaptor {
     if (_SKIP_NOW) goNextScreenSafe
     else startTime = System.currentTimeMillis()
   }
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text(target) {

@@ -1,6 +1,6 @@
 package com.mazhangjing.demo.lhl
 
-import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor, Trial}
+import com.mazhangjing.lab.{BasicScreen, Experiment, ScreenAdaptor, ScreenUtils, Trial}
 import Exp1Config.{INTRO_SIZE, _}
 import com.mazhangjing.utils.Logging
 import com.typesafe.config.{Config, ConfigFactory}
@@ -10,7 +10,7 @@ import javafx.scene.{Scene => JScene}
 import play.api.libs.json.{Json, Writes}
 import scalafx.beans.property.StringProperty
 import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{StackPane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.scene.text.{Font, Text, TextAlignment}
@@ -76,6 +76,11 @@ class Exp1Trial extends Trial {
       override val introSize: Int = INTRO_SIZE
       override val info: String = INTRO_CONTENT
     }.initScreen())
+    /*screens.add(ScreenUtils.simple(3000) {
+      new StackPane {
+        children = Seq(new Button("HELLO WORLD"))
+      }
+    })*/
     //练习部分提示界面
     screens.add(new Intro {
       override val introSize: Int = BIG_INTRO_SIZE
@@ -93,6 +98,7 @@ class Exp1Trial extends Trial {
           override val crossShowMs: Int = CROSS_TIME
           override val crossFontSize: Int = CROSS_SIZE
           information = s"com.mazhangjing.lhl.Cross Screen[LEARN]"
+          screenID = 23333
         }.initScreen())
         screens.add(new Intro {
           override val introSize: Int = NUMBER_SIZE
@@ -100,6 +106,7 @@ class Exp1Trial extends Trial {
           override val textAlign: TextAlignment = TextAlignment.Center
           override val timeSkip: Int = NUMBER_TIME
           information = s"Number Screen[LEARN] $fullNumber - Index $count, Number $number"
+          screenID = 23333
         }.initScreen())
       }
       //练习部分数据收集
@@ -107,10 +114,12 @@ class Exp1Trial extends Trial {
         override val realAnswer: String = fullNumber
         override val isPre: Boolean = true
         information = s"Number Check Screen[LEARN]"
+        screenID = 23333
       }.initScreen())
       //是否重试练习部分
-      screens.add(new LearnTry {}.initScreen())
+      screens.add(new LearnTry { screenID = 23333 }.initScreen())
     }
+    /*Experiment.skipScreens.add(23333)*/
     screens.add(new Normal {}.initScreen())
     //实验部分提示界面
     screens.add(new Intro {
@@ -127,7 +136,7 @@ class Exp1Trial extends Trial {
         screens.add(new Cross {
           override val crossShowMs: Int = CROSS_TIME
           override val crossFontSize: Int = CROSS_SIZE
-          information = s"com.mazhangjing.lhl.Cross Screen"
+          information = s"Cross Screen"
         }.initScreen())
         screens.add(new Intro {
           override val introSize: Int = NUMBER_SIZE
@@ -189,7 +198,7 @@ trait Intro extends ScreenAdaptor {
   val skipKey:KeyCode = KeyCode.Q
   val timeSkip = 1000000
   val textAlign: TextAlignment = TextAlignment.Left
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text(info) {
@@ -213,7 +222,7 @@ trait Normal extends ScreenAdaptor {
   override def callWhenShowScreen(): Unit = {
     ExpConfig._SKIP_NOW = false
   }
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text("正在加载正式实验...") {
@@ -236,7 +245,7 @@ trait Cross extends ScreenAdaptor {
   val crossFontSize: Int
   val crossShowMs: Int
   val crossColor: Color = Color.Black
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane {
       children = Seq(
         new Label("+") {
@@ -267,7 +276,7 @@ trait LearnTry extends ScreenAdaptor {
   val skipKey:KeyCode = KeyCode.Q
   val timeSkip = 1000000
   val textAlign: TextAlignment = TextAlignment.Center
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text(info) {
@@ -305,7 +314,7 @@ trait AnswerCollect extends ScreenAdaptor {
   val timeSkip = 20000
   private val answer = StringProperty("")
   private val feedback = StringProperty("")
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new VBox {

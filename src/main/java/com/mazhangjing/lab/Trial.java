@@ -1,10 +1,7 @@
 package com.mazhangjing.lab;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.Event;
 import javafx.scene.Scene;
-import javafx.scene.layout.FlowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +17,8 @@ import java.util.List;
  * <p>我们提供了获取和保存用户数据的方法 getSetUserData() 但是你一般不需要使用它。此类不和GUI直接交互，其仅和 Experiment 耦合，一般情况下，你只需要为 Experiment 提供实现好 Screen 的 Trial 对象即可。</p>
  *
  * @author <a href='http://www.mazhangjing.com'>Corkine Ma</a>
- * @author Marvin Studio @ Central China com.mazhangjing.lhl.Normal University
- * @version 1.1
+ * @author Marvin Studio @ Central China Normal University
+ * @version 1.2
  * */
 public abstract class Trial {
 
@@ -48,32 +45,31 @@ public abstract class Trial {
         this.scene = scene;
     }
 
-    private SimpleBooleanProperty canNext = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty canNext = new SimpleBooleanProperty(false);
 
-    private Iterator<Screen> iterator;
+    private Iterator<BasicScreen> iterator;
 
     private String userData;
 
-    private class TrialIterator<Screen> implements Iterator {
-        private Integer MAX = screens.size();
+    @SuppressWarnings("unchecked")
+    private class TrialIterator<BasicScreen> implements Iterator {
+        private final Integer MAX = screens.size();
         private Integer POINT = 0;
         @Override
         public boolean hasNext() {
-            if (POINT < MAX) return true;
-            else return false;
+            return POINT < MAX;
         }
         @Override
-        public Screen next() {
+        public BasicScreen next() {
             if (canNext.get()) { POINT++; }
             if (POINT >= MAX) return null;
-            //TODO 修改迭代器实现避免内存泄露
             if (POINT >= 1) screens.set(POINT - 1, null);
-            return (Screen) screens.get(POINT);
+            return (BasicScreen) screens.get(POINT);
         }
     }
 
     /**一个用来保存Screen对象的容器*/
-    public List<Screen> screens = new ArrayList<>();
+    public List<BasicScreen> screens = new ArrayList<>();
 
     /**一个用来指明当前Trial含义的辅助标签字符串，使用 toString 方法调用*/
     protected String information = "Trial";
@@ -82,7 +78,7 @@ public abstract class Trial {
     public abstract Trial initTrial();
 
     public void resetTrial() {
-        System.out.println("[TRIAL] Reset trial iterator...");
+        logger.info("[TRIAL] Reset trial iterator...");
         iterator = null;
         canNext.set(false);
     }
@@ -91,13 +87,13 @@ public abstract class Trial {
     public Trial() { }
 
     /**@return 通过内部迭代器返回当前指针指向的 Screen 对象，多次调用这个方法返回值相同*/
-    public final Screen getScreen() {
-        Screen result = null;
+    @SuppressWarnings("unchecked")
+    public final BasicScreen getScreen() {
+        BasicScreen result = null;
         if (iterator == null) {
-            iterator = new TrialIterator<Screen>();
-            if (iterator.hasNext()) result = iterator.next();
+            iterator = new TrialIterator<BasicScreen>();
         }
-        else if (iterator.hasNext()) result =  iterator.next();
+        if (iterator.hasNext()) result = iterator.next();
         canNext.set(false);
         return result;
     }

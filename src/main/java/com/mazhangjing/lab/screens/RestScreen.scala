@@ -2,9 +2,8 @@ package com.mazhangjing.lab.screens
 
 import java.time.{Duration, Instant}
 import java.util.concurrent.TimeUnit
-
 import com.mazhangjing.lab.LabUtils.{goNextScreenSafe, ifKeyButton}
-import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor}
+import com.mazhangjing.lab.{Experiment, BasicScreen, ScreenAdaptor}
 import javafx.concurrent.Task
 import javafx.event.Event
 import javafx.geometry.Pos
@@ -30,7 +29,7 @@ class RestScreen(val minRestTimeSeconds: Int) extends ScreenAdaptor {
     showScreenTime = Instant.now()
   }
 
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     val r = new VBox()
     r.setAlignment(Pos.CENTER)
     text.setText(info)

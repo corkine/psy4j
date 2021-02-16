@@ -3,7 +3,7 @@ import scala.sys.process._
 name := "psy4j"
 description := "Psy4J means Psychology Experiment ToolKit For Java Virtual Machine Platform，" +
   "The program is written in Java and Scala and built on the JavaFx GUI platform."
-version := "1.3.0"
+version := "1.3.1"
 fork in run := true
 javacOptions := Seq("-target", "11")
 

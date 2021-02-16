@@ -2,9 +2,7 @@ package com.mazhangjing.lab;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.Event;
 import javafx.scene.Scene;
-import javafx.scene.layout.FlowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,26 +24,28 @@ import java.util.Iterator;
  * eventHandler 进行处理。这样的话，不论是用户响应界面还是超时，均会绘制下一个Screen</p>
  *
  * @author <a href='http://www.mazhangjing.com'>Corkine Ma</a>
- * @author Marvin Studio @ Central China com.mazhangjing.lhl.Normal University
- * @version 1.1
+ * @author Marvin Studio @ Central China Normal University
+ * @version 1.2
  * */
 public abstract class Experiment {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private SimpleBooleanProperty canNext = new SimpleBooleanProperty(false);
+    public static ArrayList<Integer> skipScreens = new ArrayList<>();
+
+    private final SimpleBooleanProperty canNext = new SimpleBooleanProperty(false);
 
     private Iterator<Trial> iterator;
 
     private String data;
 
+    @SuppressWarnings("unchecked")
     private class ExperimentIterator<Trial> implements Iterator {
-        private Integer MAX = trials.size();
+        private final Integer MAX = trials.size();
         private Integer POINT = 0;
         @Override
         public boolean hasNext() {
-            if (POINT < MAX) return true;
-            else return false;
+            return POINT < MAX;
         }
         @Override
         public Trial next() {
@@ -66,7 +66,7 @@ public abstract class Experiment {
     protected abstract void initExperiment();
 
     public void resetExperiment() {
-        System.out.println("[EXPERIMENT] Resting experiment. iterator now is null");
+        logger.info("[EXPERIMENT] Resting experiment. iterator now is null");
         iterator = null;
         canNext.set(false);
         for (Trial trial : trials) {
@@ -80,11 +80,6 @@ public abstract class Experiment {
      * 即：GUI组件变化 -- 控制台状态变化 -- 保存数据并且绘制下一个Screen或者进行其他相应（比如弹出对话框，给被试反馈等）。这些实现在GUI类中完成。
      **/
     volatile public SimpleIntegerProperty terminal = new SimpleIntegerProperty(0);
-
-    /**默认构造器，会执行 initExperiment 方法来设置 trials 实例*/
-    public Experiment() {
-        //initExperiment();
-    }
 
     /**实现此方法来通过 getTrial 方法获取 Trial 对象，通过 getUserData 来保存数据到文件。一般应该对GUI关闭事件添加监听器完成此步骤*/
     public abstract void saveData();
@@ -102,27 +97,24 @@ public abstract class Experiment {
     public String getGlobalData() { return data; }
 
     /**@return 当前指针指向的 Trial 对象*/
+    @SuppressWarnings("unchecked")
     public final Trial getTrial() {
         Trial result = null;
         //当第一次调用时，初始化迭代器，放在这里的原因是，在构造器时initXXX，只有放在其后，迭代器才能获取内容
         if (iterator == null) {
-            System.out.println("[EXPERIMENT] Setting experiment and getTrial. iterator now is null -- yes");
+            logger.info("[EXPERIMENT] Setting experiment and getTrial. iterator now is null -- yes");
             iterator = new ExperimentIterator<Trial>();
-            if (iterator.hasNext()) result = iterator.next();
             //System.out.println("iter has next?" + iterator.hasNext());
-        //当有迭代器的情况下，返回一个合适的Trial(当前，下一个，null)
-        } else if (iterator.hasNext()){
-            result =  iterator.next();
         }
+        //当有迭代器的情况下，返回一个合适的Trial(当前，下一个，null)
+        if (iterator.hasNext()) result = iterator.next();
         canNext.set(false);
         return result;
     }
 
-    /**@return 当前指针指向的 Trial 对象的指针指向的 Screen 对象*/
-    public final Screen getScreen() {
+    private BasicScreen getNextScreen() {
         try{
-            Screen result = null;
-            result = getTrial().getScreen();
+            BasicScreen result = getTrial().getScreen();
             //当result=null时，说明无法从此Trial获取更多的Screen，即遍历完毕
             //通过设置canNext，使迭代器返回下一个Trial
             if (result == null) {
@@ -132,9 +124,19 @@ public abstract class Experiment {
             return result;
         } catch (NullPointerException e) {
             //当遍历所有Trial的Screen完毕，使用getTrial会返回null，从null中进行getScreen会出错
-            System.out.println("[EXPERIMENT] Run out.");
+            logger.info("[EXPERIMENT] Run out.");
             return null;
         }
+    }
+
+    /**@return 当前指针指向的 Trial 对象的指针指向的 Screen 对象*/
+    public final BasicScreen getScreen() {
+        BasicScreen mayNullScreen = getNextScreen();
+        if (mayNullScreen != null && skipScreens.contains(mayNullScreen.screenID)) {
+            logger.info("Skipping Screen " + mayNullScreen);
+            getTrial().release();
+            return getScreen();
+        } else return mayNullScreen;
     }
 
     public final void initScreensAndTrials(Scene scene) {
@@ -158,116 +160,4 @@ public abstract class Experiment {
         return information;
     }
 
-    /*public static void testRun(String[] args) {
-        SimpleIntegerProperty terminal = new SimpleIntegerProperty(0);
-        Screen screen1 = new Screen() {
-            @Override
-            public Screen initScreen() {
-                duration = 300;
-                layout = new FlowPane();
-                return this;
-            }
-
-            @Override
-            public void eventHandler(Event event, Experiment experiment, Scene scene) {
-
-            }
-        };
-        Screen screen2 = new Screen() {
-            @Override
-            public Screen initScreen() {
-                duration = 600;
-                layout = new FlowPane();
-                return this;
-            }
-
-            @Override
-            public void eventHandler(Event event, Experiment experiment, Scene scene) {
-
-            }
-        };
-        Trial trial = new Trial() {
-            @Override
-            public Trial initTrial() {
-                screens.add(screen1);
-                screens.add(screen2);
-                return this;
-            }
-        };
-        Trial trial2 = new Trial() {
-            @Override
-            public Trial initTrial() {
-                screens.add(screen1);
-                screens.add(screen2);
-                return this;
-            }
-        };
-        class MyExperiment extends Experiment {
-            @Override
-            protected void initExperiment() {
-                trials.add(trial); trials.add(trial2);
-            }
-
-            @Override
-            public void saveData() {
-
-            }
-        }
-        Experiment experiment = new MyExperiment();
-        //模拟GUI程序添加事件监听器用来自动解锁、翻页和绘制图像
-        terminal.addListener(((observable, oldValue, newValue) -> {
-            if (newValue.intValue() == 1 && oldValue.intValue() == 0) {
-                experiment.release();
-            }
-            terminal.set(0);
-        }));
-        //System.out.println(experiment.getScreen());
-        //System.out.println(experiment.getScreen());
-        experiment.release();
-        experiment.release();
-        //System.out.println(experiment.getScreen());
-        experiment.release();
-        //System.out.println(experiment.getScreen());
-        //experiment.release();
-        experiment.terminal.set(1);
-        //System.out.println(experiment.getScreen());
-        //System.out.println(experiment.terminal.get());
-        experiment.release();
-        //System.out.println(experiment.getScreen());
-    }*/
-
-    /*
-
-    @SuppressWarnings("unchecked")
-    private static Class<? extends Config> getConfigClazz(File file) {
-        try {
-            HashMap hashMap = new Yaml().loadAs(new FileReader(file), HashMap.class);
-            String configName = (String) hashMap.getOrDefault("configClassName","com.mazhangjing.lab.Config");
-            return (Class<? extends Config>) Class.forName(configName);
-        } catch (Exception ignored) {} return null;
-    }
-
-    public static void run() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        File file = Paths.get("/Users/corkine/工作文件夹/cmPsyLab/Lab/Lab/src/main/resources/config.yml").toFile();
-        assert (file.exists());
-        Config config = loadConfig(file, getConfigClazz(file));
-        Setting setting = config.getSetting();
-        String expClassName = setting.getExpClassName();
-        Class<?> aClass = Class.forName(expClassName);
-        Form form = ((Form) aClass.newInstance());
-        Form.main(null);
-    }
-
-    public static void main3(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        File file = Paths.get("/Users/corkine/工作文件夹/cmPsyLab/Lab/Lab/src/main/resources/config.yml").toFile();
-        assert (file.exists());
-        Config config = loadConfig(file, getConfigClazz(file));
-        Setting setting = config.getSetting();
-
-        //Experiment experiment = (Experiment) Class.forName(setting.getExpClassName()).newInstance();
-        Experiment experiment = null;
-        FxRunner form = (FxRunner)
-                Class.forName(config.getFormClassName(), true, ClassLoader.getSystemClassLoader()).newInstance();
-        form.prepareExperiment(experiment);
-    }*/
 }

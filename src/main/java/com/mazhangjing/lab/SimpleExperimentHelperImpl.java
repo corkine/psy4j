@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -50,11 +49,12 @@ import java.util.concurrent.TimeUnit;
  * 绘制一个Label或者对话框的同时而不暂停计时器，用于呈现被试的选择。这些行为使用“交给子类”设计模式，你可以充分能利用 eventHandler 方法进行自定义行为，
  * 而不用修改 Form 类的代码。
  *
- * @version 1.2.4
+ * @version 1.2.5
  * @author Corkine, MaZhangJing
  *         2019年03月30日 修正了 setScreen 的方法。
  *         2019年4月4日 修正了 initExperiment 的问题 - 在父类构造器中导致在子类 Experiment 调用 initExperiment 中引用子类字段和方法为空的问题
  *         现在 Experiment、Trial、Screen 和 xxxBuilder 都需要自行 initXXX
+ *         2021年02月16日 添加了跳过 Screen 的方法
  */
 public class SimpleExperimentHelperImpl implements ExperimentHelper {
 
@@ -72,9 +72,9 @@ public class SimpleExperimentHelperImpl implements ExperimentHelper {
 
     private final Scene scene = new Scene(drawWelcomeContent(),400,300);
 
-    private Screen currentScreen;
+    private BasicScreen currentScreen;
 
-    private boolean isInited = false;
+    private boolean isInit = false;
 
     private static final String COPYRIGHT =
             "The copyright of this software belongs to the Virtual Behavior Laboratory of the School of Psychology, Central China Normal University. " +
@@ -306,13 +306,13 @@ public class SimpleExperimentHelperImpl implements ExperimentHelper {
 
     @Override
     public Experiment getExperiment() {
-        if (isInited) return this.experiment;
+        if (isInit) return this.experiment;
         else throw new RuntimeException("请首先调用 initStage 完成类的初始化");
     }
 
     @Override
     public Scene getScene() {
-        if (isInited) return this.scene;
+        if (isInit) return this.scene;
         else throw new RuntimeException("请首先调用 initStage 完成类的初始化");
     }
 
@@ -339,9 +339,11 @@ public class SimpleExperimentHelperImpl implements ExperimentHelper {
         scene.setFill(Color.GRAY);
         stage.setOnCloseRequest(event -> {
             experiment.saveData();
+            logger.info("[EXPERIMENT HELPER] Clear Experiment SkipScreen Set");
+            Experiment.skipScreens.clear();
             try { executor.shutdownNow(); } catch (Exception ignored) { }
             //System.exit(0);
         });
-        isInited = true;
+        isInit = true;
     }
 }

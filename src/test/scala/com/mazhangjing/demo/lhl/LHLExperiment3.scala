@@ -1,6 +1,6 @@
 package com.mazhangjing.demo.lhl
 
-import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor, Trial}
+import com.mazhangjing.lab.{Experiment, BasicScreen, ScreenAdaptor, Trial}
 import Exp3Config.{GOOD_FOR_JUST_MIN_TRY, GOOD_PERCENT, GOOD_PERCENT_MIN_TRY, INTRO_SIZE, _PERCENT_NOW, _}
 import ExpConfig._SKIP_NOW
 import com.mazhangjing.utils.Logging
@@ -202,7 +202,7 @@ trait StoopScreen extends ScreenAdaptor {
     if (_SKIP_NOW) goNextScreenSafe
     else startTime = System.currentTimeMillis()
   }
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text(target) {
@@ -256,7 +256,7 @@ trait StoopFeedbackScreen extends ScreenAdaptor {
   private val info = StringProperty("")
   val introSize: Int
   val timeSkip: Int
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane { sp =>
       children = Seq(
         new Text {

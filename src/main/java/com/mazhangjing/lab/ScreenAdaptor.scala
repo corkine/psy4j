@@ -1,6 +1,5 @@
 package com.mazhangjing.lab
 
-import com.mazhangjing.utils.Logging
 import javafx.event.Event
 import javafx.scene.Scene
 import scalafx.delegate.SFXDelegate
@@ -14,10 +13,10 @@ import scalafx.scene.text.Font
   * 使得 LabUtils 使用更简洁，此外提供了 ScalaFx 自动向 JavaFx 转换的快捷方法，注意 eventHandler 中的 event、scene
   * 仍然是 JavaFx 原生的！！最后，ScreenAdaptor 提供了 initScreen 和 eventHandler 的默认实现，避免 null 错误。
   */
-trait ScreenAdaptor extends Screen with LabUtilsForScalaFx {
+trait ScreenAdaptor extends BasicScreen with LabUtilsForScalaFx {
   protected implicit def exp: Experiment = getExperiment
   protected implicit def sce: Scene = getScene
-  protected implicit val scr: Screen = this
+  protected implicit val scr: BasicScreen = this
   protected implicit def sfx2jfx(in:SFXDelegate[_]): Any = in.delegate
 
   protected val PASS:Unit = {}
@@ -26,10 +25,10 @@ trait ScreenAdaptor extends Screen with LabUtilsForScalaFx {
   information = getClass.getSimpleName
   duration = UNLIMITED
 
-  override def initScreen(): Screen = {
+  override def initScreen(): BasicScreen = {
     layout = new StackPane {
       children = Seq(
-        new Label(s"${information} have't implement initScreen!") {
+        new Label(s"${information} have not implement initScreen!") {
           font = Font.font(30)
           textFill = Color.Red
         }

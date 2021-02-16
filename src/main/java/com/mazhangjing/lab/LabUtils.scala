@@ -5,7 +5,6 @@
 package com.mazhangjing.lab
 
 import java.util.{Timer, TimerTask}
-
 import javafx.event.Event
 import javafx.geometry.Pos
 import javafx.scene.input.{KeyCode, KeyEvent, MouseButton, MouseEvent}
@@ -52,12 +51,12 @@ import scala.util.Random
   *  @note 2019-04-03 去除了 ScreenBuilder 和 TrialBuilder 的 init 操作
   *        2019-04-14 修复了 ScreenBuilder 的 object 造成的严重的 preShowAction、eventAction、afterShowAction 错误问题
   */
-class ScreenBuilder extends Builder[Screen] {
+class ScreenBuilder extends Builder[BasicScreen] {
 
   private var name = ""
   private var showTime = 0
   private var parent: Parent = _
-  private var eventAction = mutable.Buffer[(Event, Experiment, Scene, Screen) => Unit]()
+  private var eventAction = mutable.Buffer[(Event, Experiment, Scene, BasicScreen) => Unit]()
   private var preShowAction = mutable.Buffer[(Experiment, Scene) => Unit]()
   private var afterShowAction = mutable.Buffer[(Experiment, Scene) => Unit]()
 
@@ -115,7 +114,7 @@ class ScreenBuilder extends Builder[Screen] {
     * @param eventAction JavaAPI，接受事件、当前实验、当前场景三个参数，进行操作，返回 null。
     * @return ScreenBuilder
     */
-  def ifEventThen(eventAction: (Event, Experiment, Scene, Screen) => Unit): this.type = {
+  def ifEventThen(eventAction: (Event, Experiment, Scene, BasicScreen) => Unit): this.type = {
     this.eventAction += eventAction; this
   }
 
@@ -148,10 +147,10 @@ class ScreenBuilder extends Builder[Screen] {
     * @return 构造好的 Screen 实例
     */
   @throws[IllegalStateException]
-  override def build(): Screen = {
+  override def build(): BasicScreen = {
     if (showTime == 0 || parent == null)
       throw new IllegalStateException("创建 Screen 定义错误，可能是未设置呈现时长或者呈现样式")
-    val result = new Screen {
+    val result = new BasicScreen {
       //对于原来的工厂模式，因为 Screen 中定义的 initScreen 在 Trial 中定义，而 Trial.initTrial 在 Experiment 的
       //initExperiment 中定义，而后者在注入每个 Screen Experiment 依赖后才调用，因此整体不会出错
       //而使用建造者模式，提前返回了 Screen、Trial 对象，因此，其对象的构造时，调用 getExperiment 返回的必定是空值，
@@ -163,7 +162,7 @@ class ScreenBuilder extends Builder[Screen] {
 
       //说白了这是一个 OOP 和 FP 的冲突，也是方法和函数的冲突，方法可以动态定义，依赖类中其它方法，而函数则必须静态定义，
       //但是其优点是可以像值一样传递，非常轻便，而方法则必须寄居在一个类中（太过于沉重）。
-      override def initScreen(): Screen = {
+      override def initScreen(): BasicScreen = {
         this.information = name
         this.duration = showTime
         this.layout = parent
@@ -193,7 +192,7 @@ class ScreenBuilder extends Builder[Screen] {
   */
 object LabUtils {
 
-  val isCurrentScreen: (Experiment, Screen) => Boolean =
+  val isCurrentScreen: (Experiment, BasicScreen) => Boolean =
     (exp,  scr) => if (exp.getScreen == scr) true else false
 
   /***
@@ -301,7 +300,7 @@ object LabUtils {
     * 请最好不要在 Psy4J 的 Screen 中使用 Timer 进行定时改变 Screen 的 GUI 界面
     * @param experiment 当前实验对象
     */
-  def goNextScreenSafe(implicit experiment: Experiment, currentScreen: Screen): Unit = {
+  def goNextScreenSafe(implicit experiment: Experiment, currentScreen: BasicScreen): Unit = {
     if (isCurrentScreen(experiment,currentScreen)) goNextScreenUnSafe(experiment)
   }
 
@@ -313,8 +312,8 @@ object LabUtils {
     * @param experiment 当前实验对象
     * @param currentScreen 执行代码所依赖的 Screen 对象
     */
-  def doInScreenAction(experiment: Experiment, currentScreen: Screen,
-                       op : (Experiment, Screen) => Unit): Unit = {
+  def doInScreenAction(experiment: Experiment, currentScreen: BasicScreen,
+                       op : (Experiment, BasicScreen) => Unit): Unit = {
     if (isCurrentScreen(experiment, currentScreen)) op(experiment, experiment.getScreen)
   }
 
@@ -326,7 +325,7 @@ object LabUtils {
     * @param experiment 当前实验对象
     * @param currentScreen 执行代码所依赖的 Screen 对象
     */
-  def doInScreenAction(op : => Unit)(implicit experiment: Experiment, currentScreen: Screen): Unit = {
+  def doInScreenAction(op : => Unit)(implicit experiment: Experiment, currentScreen: BasicScreen): Unit = {
     if (isCurrentScreen(experiment, currentScreen)) op
   }
 
@@ -347,7 +346,7 @@ object LabUtils {
     * @param experiment 当前 Experiment 对象
     * @param screen 调用此方法时，而不是定时器到期后的 Experiment 指向的 Screen 对象
     */
-  def doAfter(delay: Long, experiment: Experiment, screen: Screen)(doTask: () => Unit): Unit = {
+  def doAfter(delay: Long, experiment: Experiment, screen: BasicScreen)(doTask: () => Unit): Unit = {
     val timer = new Timer()
     val timerTask = new TimerTask {
       override def run(): Unit = if (isCurrentScreen(experiment, screen)) doTask()
@@ -364,14 +363,14 @@ object LabUtils {
     * @param experiment 当前 Experiment 对象
     * @param screen 调用此方法时，而不是定时器到期后的 Experiment 指向的 Screen 对象
     */
-  def doAfter(delay: Long)(doTask : => Unit)(implicit experiment: Experiment, screen: Screen): Unit = {
+  def doAfter(delay: Long)(doTask : => Unit)(implicit experiment: Experiment, screen: BasicScreen): Unit = {
     doAfter(delay, experiment, screen)(() => doTask)
   }
 }
 
 trait LabUtilsForScalaFx {
 
-  val isCurrentScreen: (Experiment, Screen) => Boolean =
+  val isCurrentScreen: (Experiment, BasicScreen) => Boolean =
     (exp,  scr) => if (exp.getScreen == scr) true else false
 
   /***
@@ -459,7 +458,7 @@ trait LabUtilsForScalaFx {
    * 请最好不要在 Psy4J 的 Screen 中使用 Timer 进行定时改变 Screen 的 GUI 界面
    * @param experiment 当前实验对象
    */
-  def goNextScreenSafe(implicit experiment: Experiment, currentScreen: Screen): Unit = {
+  def goNextScreenSafe(implicit experiment: Experiment, currentScreen: BasicScreen): Unit = {
     if (isCurrentScreen(experiment,currentScreen)) goNextScreenUnSafe(experiment)
   }
 
@@ -471,7 +470,7 @@ trait LabUtilsForScalaFx {
    * @param experiment 当前实验对象
    * @param currentScreen 执行代码所依赖的 Screen 对象
    */
-  def doInScreenAction(op : => Unit)(implicit experiment: Experiment, currentScreen: Screen): Unit = {
+  def doInScreenAction(op : => Unit)(implicit experiment: Experiment, currentScreen: BasicScreen): Unit = {
     if (isCurrentScreen(experiment, currentScreen)) op
   }
 
@@ -493,7 +492,7 @@ trait LabUtilsForScalaFx {
    * @param experiment 当前 Experiment 对象
    * @param screen 调用此方法时，而不是定时器到期后的 Experiment 指向的 Screen 对象
    */
-  def doAfter(delay: Long)(doTask : => Unit)(implicit experiment: Experiment, screen: Screen): Unit = {
+  def doAfter(delay: Long)(doTask : => Unit)(implicit experiment: Experiment, screen: BasicScreen): Unit = {
     val timer = new Timer()
     val timerTask = new TimerTask {
       override def run(): Unit = if (isCurrentScreen(experiment, screen)) doTask
