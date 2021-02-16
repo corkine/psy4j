@@ -18,7 +18,7 @@ libraryDependencies ++= {
     case n if n.startsWith("Windows") => "win"
     case _ => throw new Exception("Unknown platform!")
   }
-  lazy val javaFXModules = Seq("base", "controls", "graphics")
+  lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
   Seq(
     "org.scalafx" %% "scalafx" % s"$javaFXVersion-R21",
     "org.slf4j" % "slf4j-api" % "1.7.25",

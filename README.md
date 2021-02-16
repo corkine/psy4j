@@ -1,4 +1,4 @@
-# Psy4J 1.3.0
+# Psy4J 1.3.1
 
 > A cognitive science package based on object-oriented programming ideas. The program is driven by the JavaFx framework and the JVM platform.
 
@@ -18,7 +18,7 @@ Simply add the following dependencies to your Maven/Gradle/sbt project to use Ps
 <dependency>
     <groupId>com.mazhangjing</groupId>
     <artifactId>psy4j</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
